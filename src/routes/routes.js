@@ -11,12 +11,19 @@ import Icons from 'src/components/Dashboard/Views/Icons.vue'
 import Maps from 'src/components/Dashboard/Views/Maps.vue'
 import Notifications from 'src/components/Dashboard/Views/Notifications.vue'
 import ImportScreen from 'src/components/Dashboard/Views/Import/ImportScreen.vue'
+import LoginScreen from 'src/components/Dashboard/Views/Login/LoginScreen.vue'
 
 const routes = [
   {
     path: '/',
     component: DashboardLayout,
     redirect: '/admin/overview'
+  },
+  {
+    path: '/login',
+    name: 'LoginScreen',
+    component: LoginScreen,
+    meta: { requiresAuth: false}
   },
   {
     path: '/admin',
@@ -26,42 +33,50 @@ const routes = [
       {
         path: 'overview',
         name: 'Overview',
-        component: Overview
+        component: Overview,
+        meta: { requiresAuth: true }
       },
       {
         path: 'user',
         name: 'User',
-        component: UserProfile
+        component: UserProfile,
+        meta: { requiresAuth: true }
       },
       {
         path: 'table-list',
         name: 'Table List',
-        component: TableList
+        component: TableList,
+        meta: { requiresAuth: true }
       },
       {
         path: 'typography',
         name: 'Typography',
-        component: Typography
+        component: Typography,
+        meta: { requiresAuth: true }
       },
       {
         path: 'icons',
         name: 'Icons',
-        component: Icons
+        component: Icons,
+        meta: { requiresAuth: true }
       },
       {
         path: 'maps',
         name: 'Maps',
-        component: Maps
+        component: Maps,
+        meta: { requiresAuth: true }
       },
       {
         path: 'notifications',
         name: 'Notifications',
-        component: Notifications
+        component: Notifications,
+        meta: { requiresAuth: true }
       },
       {
         path: 'import',
         name: 'Import',
-        component: ImportScreen
+        component: ImportScreen,
+        meta: { requiresAuth: true }
       }
     ]
   },

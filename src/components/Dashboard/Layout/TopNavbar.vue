@@ -54,7 +54,7 @@
             <div class="divider"></div>
             <a class="dropdown-item" href="#">Separated link</a>
           </drop-down>
-          <li class="nav-item">
+          <li class="nav-item" @click ="logout()">
             <a href="#" class="nav-link">
               Log out
             </a>
@@ -92,6 +92,9 @@
       },
       hideSidebar () {
         this.$sidebar.displaySidebar(false)
+      },
+      logout(){
+        this.$store.dispatch('logout');
       }
     }
   }
