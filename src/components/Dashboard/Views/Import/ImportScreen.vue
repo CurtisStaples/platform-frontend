@@ -1,32 +1,114 @@
 <template>
   <div class="content">
+    <div class="">
+                <button type="button" class="btn btn-xl" @click.prevent="onUploadPhotos()">UPLOAD PHOTOS</button>
+                <input type ="file" class="display-none"
+                  ref="uploader"
+                  accept="image/*"
+                  multiple
+                  @change="onFilesChosen">
+    </div>
+
+    <div class="row">
+      <div v-for = "url in imageUrls" class ="col-md-4 mt-2-5">
+        <img :src="url" class="medium-sized">
+      </div>
+    </div>
+    <button v-if="photosToImport" type="button" class="btn btn-xl black-button" @click.prevent="createPhotos()">IMPORT</button>
+    <hr>
     <div class="container-fluid">
+      <h3> Imported Photos </h3>
       <div class="row">
-        <div v-for = "image in images" class ="col-md-4 mt-2-5">
-          <img :src="image.src" class="medium-sized">
+        <div v-for = "image in imported" class ="col-md-4 mt-2-5">
+          <img :src="image.url" class="medium-sized">
         </div>
       </div>
     </div>
   </div>
 </template>
 <script>
-
+import ImageService from '../../../../services/imageService.js'
 export default {
   components: {
 
   },
   data () {
     return {
-      images:[
-        {src:'http://www.arrl.org/images/view/TIS/PowerLineNoise/Intro_lrg.jpg'},
-        {src:'https://static.utilityweek.co.uk/artimg/1396632_Broken-pylon-snow.jpg'},
-        {src:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfhwqNv4hv0Nr3WJTbf5rs5YYTZIk7A0rtRMtba_rkEEdfpC0O'},
-        {src:'https://www.xcelenergy.com/staticfiles/xe-responsive/assets/images/3%20Tile/Xcel-Energy-Transmission-Line-3Tile-768x420.jpg'}
-    ]
+      imported:[],
+      photosToImport:false,
+      images: [],
+      imageUrls:[],
     }
   },
   methods: {
-
+    onUploadPhotos(){
+      this.$refs.uploader.click();
+    },
+    onFilesChosen(event){
+      const files = event.target.files;
+      let self = this;
+      let filesLength = files.length;
+      let fileArray = this.getFileArray(files,filesLength);
+      fileArray.forEach(function(file){
+        let fileName = file.name;
+        if(fileName.lastIndexOf('.')<=0) return alert('Please valid files only');
+        const fileReader = new FileReader();
+        let imageUrl;
+        fileReader.addEventListener('load',() =>{
+          imageUrl = fileReader.result;
+          self.imageUrls.push(imageUrl);
+        })
+          fileReader.readAsDataURL(file)
+          self.images.push(file);
+          console.log("images", self.images);
+          self.photosToImport = true;
+      });
+    },
+    getFileArray(files,length){
+      let fileArray = [];
+      for(let i = 0; i < length; i++){
+        let file = files[i];
+        fileArray.push(file);
+      }
+      return fileArray;
+    },
+    createPhotos() {
+    let downloadUrls = [];
+    let self = this;
+    console.log("add to post",this.images);
+    this.images.forEach((image) => {
+      ImageService.getImageURL(image.name, image).then(function(url){
+          downloadUrls.push(url);
+          console.log(downloadUrls);
+          if(downloadUrls.length == self.images.length){
+            ImageService.addImages(downloadUrls, self.successCallback);
+            return;
+          }
+        });
+      });
+    },
+    getPhotos(){
+      let self = this;
+      ImageService.getImportedPhotos().then(function(querySnapshot){
+        self.imported = querySnapshot.docs.map(doc => {
+          let image = doc.data();
+          image.id = doc.id;
+          return image;
+        })
+        self.imported.sort(function(a,b){
+          return b.createdAt - a.createdAt;
+        })
+      });
+    },
+    successCallback(){
+      this.getPhotos();
+      this.imageUrls = [];
+      this.images = [];
+      this.photosToImport = false;
+    }
+  },
+  mounted(){
+    this.getPhotos();
   }
 }
 
@@ -38,6 +120,9 @@ export default {
 }
 .mt-2-5{
   margin-top: 2.5% !important;
+}
+.display-none{
+  display: none;
 }
 
 </style>

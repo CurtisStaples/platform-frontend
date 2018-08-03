@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import router from '../routes/routes.js'
 import routerAccess from './routerAccess.js'
+import UserService from '../services/userService.js'
 import firebase from 'firebase'
 
 Vue.use(Vuex);
@@ -33,6 +34,7 @@ export const store = new Vuex.Store({
       let self = this;
       firebase.auth().signInWithEmailAndPassword(payload.email, payload.password).then(function(user){
         state.curUser = firebase.auth().currentUser;
+        UserService.setCurrentUser(state.curUser);
         let router = routerAccess.getRouter();
         router.push('/');
       });
