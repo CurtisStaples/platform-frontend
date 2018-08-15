@@ -5,6 +5,8 @@ import { store } from './store/store.js'
 import firebaseInfo from './store/firebase.js'
 import routerAccess from './store/routerAccess.js'
 import firebase from 'firebase'
+import VModal from 'vue-js-modal'
+ 
 
 // LightBootstrap plugin
 import LightBootstrap from './light-bootstrap-main'
@@ -14,6 +16,7 @@ import routes from './routes/routes'
 // plugin setup
 Vue.use(VueRouter)
 Vue.use(LightBootstrap)
+Vue.use(VModal)
 
 // configure router
 const router = new VueRouter({

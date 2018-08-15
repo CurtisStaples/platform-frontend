@@ -20,6 +20,7 @@ export default {
       })
     },
   addImages(urls,callback){
+    // in future need to attach JSON labels to images 
     let callbackCheck = [];
     for(let i = 0; i < urls.length; i++){
       let image = {};
