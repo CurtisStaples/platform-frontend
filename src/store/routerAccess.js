@@ -1,9 +1,9 @@
 let router = {};
 export default {
-  setRouter(result){
+  setRouter(result){ // set a reference to the current router
     router = result;
   },
-  getRouter(){
+  getRouter(){ // return the reference to the current router 
     return router;
   }
 }

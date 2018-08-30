@@ -2,10 +2,10 @@
 let currentUser = {};
 
 export default {
-  setCurrentUser(data){
+  setCurrentUser(data){ // sets the current user for the system
     currentUser = data;
   },
-  getCurrentUserId(){
+  getCurrentUserId(){ // returns the id related to the current company 
     return currentUser.uid;
   }
 }

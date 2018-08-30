@@ -18,10 +18,10 @@
           <div class="col-md-6">
             <p> <span class="bold">Image:</span> {{zoomedImg.label.ID}}</p>
             <p> <span class="bold">Inspection Date:</span> {{getInspectionDate(zoomedImg.label.InspectionDate.seconds)}}</p>
-            <p><span class="bold">Location:</span>  {{zoomedImg.label.Location}} </p>
-            <p> <span class="bold">Labels: </span> {{zoomedImg.label.labels}}</p>
+            <p> <span class="bold">Location:</span> <a v-bind:href="getLocationLink(zoomedImg.label.Location._lat,zoomedImg.label.Location._long)" target="_blank">View Location</a> </p>
+            <p> <span class="bold">Labels: </span> {{getFormattedLabels(zoomedImg.label.labels)}}</p>
             <p> <span class="bold">Defect Severity: </span> {{zoomedImg.label.DefectSeverity}} </p>
-            <p> <span class="bold">Confidence:</span>  {{zoomedImg.label.Confidence}}</p>
+            <p> <span class="bold">Confidence Percentage:</span>  {{zoomedImg.label.Confidence}}</p>
           </div>
         </div>
           <button type="button" class="btn btn-md btn-success margin-below" @click.prevent="hideModal()">Hide Modal</button>
@@ -46,8 +46,7 @@
   </div>
 </template>
 <script>
-import ImageService from '../../../../services/imageService.js'
-//import geocoder from 'geocoder'
+import ImageService from '../../../../services/imageService.js' // middleware to communicate with firebase
 export default {
   components: {
 
@@ -62,30 +61,30 @@ export default {
     }
   },
   methods: {
-    onUploadPhotos(){
+    onUploadPhotos(){ // client clicks upload photos button
       this.$refs.uploader.click();
     },
-    onFilesChosen(event){
+    onFilesChosen(event){ // once they have chosen all images to upload
       const files = event.target.files;
       let self = this;
       let filesLength = files.length;
-      let fileArray = this.getFileArray(files,filesLength);
+      let fileArray = this.getFileArray(files,filesLength); // returns a formatted array with uploaded user files
       fileArray.forEach(function(file){
         let fileName = file.name;
-        if(fileName.lastIndexOf('.')<=0) return alert('Please valid files only');
+        if(fileName.lastIndexOf('.')<=0) return alert('Please valid files only'); // run a check on each file
         const fileReader = new FileReader();
         let imageUrl;
-        fileReader.addEventListener('load',() =>{
-          imageUrl = fileReader.result;
+        fileReader.addEventListener('load',() =>{ // once the image is done being read by the file reader
+          imageUrl = fileReader.result; // get the imageUrl ref to the image
           self.imageUrls.push(imageUrl);
         })
           fileReader.readAsDataURL(file)
-          self.images.push(file);
+          self.images.push(file); // push this file to the set of images that need to be upload
           console.log("images", self.images);
           self.photosToImport = true;
       });
     },
-    getFileArray(files,length){
+    getFileArray(files,length){ // returns a formatted array with uploaded user files
       let fileArray = [];
       for(let i = 0; i < length; i++){
         let file = files[i];
@@ -93,22 +92,22 @@ export default {
       }
       return fileArray;
     },
-    createPhotos() {
+    createPhotos() { // once the user chooses to upload the chosen images. This will create image documents in the images collection for the uploaded photos
     let downloadUrls = [];
     let self = this;
     console.log("add to post",this.images);
     this.images.forEach((image) => {
-      ImageService.getImageURL(image.name, image).then(function(url){
+      ImageService.getImageURL(image.name, image).then(function(url){ // get the Firebase Storage Url ref for the image
           downloadUrls.push(url);
           console.log(downloadUrls);
-          if(downloadUrls.length == self.images.length){
-            ImageService.addImages(downloadUrls, self.successCallback);
+          if(downloadUrls.length == self.images.length){ // once finished
+            ImageService.addImages(downloadUrls, self.successCallback); // add each of the image urls to firestore, so we can access the reference later
             return;
           }
         });
       });
     },
-    getPhotos(){
+    getPhotos(){ // get the imported photos related to the current user's company and will set the initial placeholder for the zoomed img
       let self = this;
       ImageService.getImportedPhotos().then(function(querySnapshot){
         self.imported = querySnapshot.docs.map(doc => {
@@ -117,18 +116,18 @@ export default {
           return image;
         });
         self.imported.sort(function(a,b){
-          return b.createdAt - a.createdAt;
+          return b.createdAt - a.createdAt; // the most recent imports will show first
         });
-        self.zoomedImg = self.imported[0];
+        self.zoomedImg = self.imported[0]; // set an iniital variable for the image chosen to zoom into
       });
     },
-    successCallback(){
-      this.getPhotos();
+    successCallback(){ // after the photos are uploaded, make sure to reset everything
+      this.getPhotos(); // fetch photos again
       this.imageUrls = [];
       this.images = [];
       this.photosToImport = false;
     },
-    showModal(image){
+    showModal(image){ // show the zoomed img and information for the passed in image
       this.zoomedImg = image;
       console.log(image);
 
@@ -137,7 +136,7 @@ export default {
     hideModal(){
       this.$modal.hide('zoom-imgs');
     },
-    getInspectionDate(seconds){
+    getInspectionDate(seconds){ // convert seconds to a readeable date
       console.log(seconds);
       var utcSeconds = seconds;
       var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
@@ -146,15 +145,23 @@ export default {
       let date = "" + (d.getMonth() + 1) + '/'+ d.getDate()+ '/'+ d.getFullYear();
       return date;
     },
-    getLocation(lat,lon){
-      let self = this;
-      return geocoder.reverseGeocode(lat, lon, function(err, res) {
-        console.log(res);
-        return "hello"
-      });
+    getFormattedLabels(labels){ // format the labels to a readable formatted
+      let result = "";
+      for(let i = 0; i < labels.length; i++){
+        result +=labels[i];
+        if(i !== labels.length -1) result += ",";
+      }
+      return result;
+    },
+    getLocationLink(lat,lon){ // link to Google Maps based on latitude and longitude
+      let baseUrl = 'https://maps.google.com/?q=';
+      lat = "" + lat;
+      lon = "" + lon;
+      let url = baseUrl + lat + "," + lon;
+      return url
     }
   },
-  mounted(){
+  mounted(){ // on mount, fetch the already imported photos from the current user's company 
     this.getPhotos();
   }
 }

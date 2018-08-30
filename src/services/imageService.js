@@ -8,19 +8,19 @@ const storage = firebase.storage;
 const storageRef = storage.ref();
 
 export default {
-  getImageURL(fileName,image) {
+  getImageURL(fileName,image) { // creates an image url for future access to the image
     let companyID = UserService.getCurrentUserId();
     let timestamp = new Date().getTime();
-    let path = '/images/imported/' + companyID +'/' + timestamp + fileName;
+    let path = '/images/imported/' + companyID +'/' + timestamp + fileName; // path in Firebase Storage
     let imageRef = storageRef.child(path)
     return imageRef.put(image).then(snapshot =>{
       return snapshot.ref.getDownloadURL().then(function(downloadURL){
-        return downloadURL;
+        return downloadURL; // downloadUrl that will be used in the images collection
         })
       })
     },
-  addImages(urls,callback){
-    // in future need to attach JSON labels to images 
+  addImages(urls,callback){ // add each of the images to the images collection in Firebase
+    // in future need to attach JSON labels to images
     let callbackCheck = [];
     for(let i = 0; i < urls.length; i++){
       let image = {};
@@ -39,7 +39,7 @@ export default {
     }
 
   },
-  getImportedPhotos(){
+  getImportedPhotos(){ // find all images imported by the comapny of the current user 
     let companyID = UserService.getCurrentUserId();
     return images.where("companyID", "==", companyID).get();
   }
