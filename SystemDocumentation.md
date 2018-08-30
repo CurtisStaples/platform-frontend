@@ -20,6 +20,6 @@ import tab
 
 Store (src/store): Performs Login/Logout Functionality
 Routing (src/routes, src/store/routerAccess.js, src/main.js)
-  :Routes are contained in src/routes
-  :routerAccess.js contains a ref to the router so we can push to dashboard following sign in
-  :main.js routes to login when there isn't a currently authenticated user 
+  - Routes are contained in src/routes
+  - routerAccess.js contains a ref to the router so we can push to dashboard following sign in
+  - main.js routes to login when there isn't a currently authenticated user
